@@ -1,0 +1,111 @@
+name: RetailAnalytics — SQL Database CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/RetailAnalyticsV1/RetailAnalyticsV1.sqlproj/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'dev'
+
+jobs:
+  build:
+    name: Build & Validate SQL Project
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/.dotnet
+        with:
+          dotnet-version: '8.x'
+
+      - name: Restore NuGet packages
+        run: dotnet restore src/RetailAnalyticsV1/RetailAnalyticsV1.sqlproj
+
+      - name: Build SQL Project
+        run: dotnet build src/RetailAnalyticsV1/RetailAnalyticsV1.sqlproj --configuration Release
+
+      - name: Upload dacpac artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dacpac
+          path: '**/*.dacpac'
+          retention-days: 30
+
+  deploy_development:
+    name: Deploy to Development
+    runs-on: self-hosted
+    needs: build
+    steps:
+      - name: Download dacpac artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dacpac
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/.dotnet
+        with:
+          dotnet-version: '8.x'
+
+      - name: Install SqlPackage
+        run: dotnet tool install --global microsoft.sqlpackage
+
+      - name: Deploy to Development
+        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalytics.dacpac /TargetConnectionString:"${{ secrets.DEVELOPMENT_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+
+  deploy_qa:
+    name: Deploy to QA
+    runs-on: self-hosted
+    needs: deploy_development
+    steps:
+      - name: Download dacpac artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dacpac
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/.dotnet
+        with:
+          dotnet-version: '8.x'
+
+      - name: Install SqlPackage
+        run: dotnet tool install --global microsoft.sqlpackage
+
+      - name: Deploy to QA
+        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalytics.dacpac /TargetConnectionString:"${{ secrets.QA_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+
+  deploy_production:
+    name: Deploy to Production
+    runs-on: self-hosted
+    needs: deploy_qa
+    environment: Production
+    steps:
+      - name: Download dacpac artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dacpac
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        env:
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/.dotnet
+        with:
+          dotnet-version: '8.x'
+
+      - name: Install SqlPackage
+        run: dotnet tool install --global microsoft.sqlpackage
+
+      - name: Deploy to Production
+        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalytics.dacpac /TargetConnectionString:"${{ secrets.PRODUCTION_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+

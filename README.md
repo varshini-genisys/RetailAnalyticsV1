@@ -1,2 +1,3 @@
-# RetailAnalyticsV1
-SQL Database Project: RetailAnalytics
+# RetailAnalytics
+
+SQL Database Project managed via DB DevOps Portal.
