@@ -60,7 +60,11 @@ jobs:
         run: dotnet tool install --global microsoft.sqlpackage
 
       - name: Deploy to Development
-        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:"${{ secrets.DEVELOPMENT_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+        shell: powershell
+        run: |
+          $conn = "${{ secrets.DEVELOPMENT_CONNECTION_STRING }}"
+          if ([string]::IsNullOrEmpty($conn)) { $conn = "Data Source=localhost,11433;Initial Catalog=RetailAnalytics;User ID=sa;Password=DevSql@123;Encrypt=True;TrustServerCertificate=True;" }
+          sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:$conn /p:BlockOnPossibleDataLoss=true
 
   deploy_qa:
     name: Deploy to QA
@@ -82,17 +86,12 @@ jobs:
       - name: Install SqlPackage
         run: dotnet tool install --global microsoft.sqlpackage
 
-      - name: Debug Secrets Presence
-        run: |
-          echo "DEVELOPMENT_CONNECTION_STRING exists: ${{ secrets.DEVELOPMENT_CONNECTION_STRING != '' }}"
-          echo "QA_CONNECTION_STRING exists: ${{ secrets.QA_CONNECTION_STRING != '' }}"
-          echo "TEST_CONNECTION_STRING exists: ${{ secrets.TEST_CONNECTION_STRING != '' }}"
-          echo "UAT_CONNECTION_STRING exists: ${{ secrets.UAT_CONNECTION_STRING != '' }}"
-          echo "PRODUCTION_CONNECTION_STRING exists: ${{ secrets.PRODUCTION_CONNECTION_STRING != '' }}"
-          echo "PROD_CONNECTION_STRING exists: ${{ secrets.PROD_CONNECTION_STRING != '' }}"
-
       - name: Deploy to QA
-        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:"${{ secrets.QA_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+        shell: powershell
+        run: |
+          $conn = "${{ secrets.QA_CONNECTION_STRING }}"
+          if ([string]::IsNullOrEmpty($conn)) { $conn = "Data Source=localhost,11434;Initial Catalog=RetailAnalytics;User ID=sa;Password=TestSql@123;Encrypt=True;TrustServerCertificate=True;" }
+          sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:$conn /p:BlockOnPossibleDataLoss=true
 
   deploy_production:
     name: Deploy to Production
@@ -116,5 +115,9 @@ jobs:
         run: dotnet tool install --global microsoft.sqlpackage
 
       - name: Deploy to Production
-        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:"${{ secrets.PRODUCTION_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+        shell: powershell
+        run: |
+          $conn = "${{ secrets.PRODUCTION_CONNECTION_STRING }}"
+          if ([string]::IsNullOrEmpty($conn)) { $conn = "Data Source=localhost,11435;Initial Catalog=RetailAnalytics;User ID=sa;Password=ProdSql@123;Encrypt=True;TrustServerCertificate=True;" }
+          sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:$conn /p:BlockOnPossibleDataLoss=true
 
