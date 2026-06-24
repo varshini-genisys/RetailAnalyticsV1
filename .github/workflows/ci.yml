@@ -82,6 +82,15 @@ jobs:
       - name: Install SqlPackage
         run: dotnet tool install --global microsoft.sqlpackage
 
+      - name: Debug Secrets Presence
+        run: |
+          echo "DEVELOPMENT_CONNECTION_STRING exists: ${{ secrets.DEVELOPMENT_CONNECTION_STRING != '' }}"
+          echo "QA_CONNECTION_STRING exists: ${{ secrets.QA_CONNECTION_STRING != '' }}"
+          echo "TEST_CONNECTION_STRING exists: ${{ secrets.TEST_CONNECTION_STRING != '' }}"
+          echo "UAT_CONNECTION_STRING exists: ${{ secrets.UAT_CONNECTION_STRING != '' }}"
+          echo "PRODUCTION_CONNECTION_STRING exists: ${{ secrets.PRODUCTION_CONNECTION_STRING != '' }}"
+          echo "PROD_CONNECTION_STRING exists: ${{ secrets.PROD_CONNECTION_STRING != '' }}"
+
       - name: Deploy to QA
         run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:"${{ secrets.QA_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
 
