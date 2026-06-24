@@ -60,7 +60,7 @@ jobs:
         run: dotnet tool install --global microsoft.sqlpackage
 
       - name: Deploy to Development
-        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalytics.dacpac /TargetConnectionString:"${{ secrets.DEVELOPMENT_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:"${{ secrets.DEVELOPMENT_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
 
   deploy_qa:
     name: Deploy to QA
@@ -83,7 +83,7 @@ jobs:
         run: dotnet tool install --global microsoft.sqlpackage
 
       - name: Deploy to QA
-        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalytics.dacpac /TargetConnectionString:"${{ secrets.QA_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:"${{ secrets.QA_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
 
   deploy_production:
     name: Deploy to Production
@@ -107,5 +107,5 @@ jobs:
         run: dotnet tool install --global microsoft.sqlpackage
 
       - name: Deploy to Production
-        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalytics.dacpac /TargetConnectionString:"${{ secrets.PRODUCTION_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
+        run: sqlpackage /Action:Publish /SourceFile:src/RetailAnalyticsV1/bin/Release/RetailAnalyticsV1.dacpac /TargetConnectionString:"${{ secrets.PRODUCTION_CONNECTION_STRING }}" /p:BlockOnPossibleDataLoss=true
 
